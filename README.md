@@ -1,59 +1,206 @@
-# Express API Starter with Typescript
+# SSO Server with Express and TypeScript
 
-How to use this template:
+A Single Sign-On (SSO) server implementation using Express.js, TypeScript, and MongoDB with support for local authentication and social logins (Google and Facebook).
 
-```sh
-npx create-express-api --typescript --directory my-api-name
-```
+## Features
 
-Includes API Server utilities:
-
-* [morgan](https://www.npmjs.com/package/morgan)
-  * HTTP request logger middleware for node.js
-* [helmet](https://www.npmjs.com/package/helmet)
-  * Helmet helps you secure your Express apps by setting various HTTP headers. It's not a silver bullet, but it can help!
-* [dotenv](https://www.npmjs.com/package/dotenv)
-  * Dotenv is a zero-dependency module that loads environment variables from a `.env` file into `process.env`
-* [cors](https://www.npmjs.com/package/cors)
-  * CORS is a node.js package for providing a Connect/Express middleware that can be used to enable CORS with various options.
-
-Development utilities:
-
-* [typescript](https://www.npmjs.com/package/typescript)
-  * TypeScript is a language for application-scale JavaScript.
-* [ts-node](https://www.npmjs.com/package/ts-node)
-  * TypeScript execution and REPL for node.js, with source map and native ESM support.
-* [nodemon](https://www.npmjs.com/package/nodemon)
-  * nodemon is a tool that helps develop node.js based applications by automatically restarting the node application when file changes in the directory are detected.
-* [eslint](https://www.npmjs.com/package/eslint)
-  * ESLint is a tool for identifying and reporting on patterns found in ECMAScript/JavaScript code.
-* [typescript-eslint](https://typescript-eslint.io/)
-  * Tooling which enables ESLint to support TypeScript.
-* [jest](https://www.npmjs.com/package/jest)
-  * Jest is a delightful JavaScript Testing Framework with a focus on simplicity.
-* [supertest](https://www.npmjs.com/package/supertest)
-  * HTTP assertions made easy via superagent.
+* Multiple authentication methods:
+  * Local authentication (email/password)
+  * Google OAuth2 authentication
+  * Facebook OAuth authentication
+* Client application management
+* JWT-based authentication
+* Session management
+* Profile management
+* Secure password handling
+* Flash messages for user feedback
 
 ## Setup
 
-```
+```bash
 npm install
 ```
 
-## Lint
+## Environment Variables
 
-```
-npm run lint
+Create a `.env` file in the root directory:
+
+```env
+PORT=5000
+APP_URL=http://localhost:5000
+MONGODB_URI=mongodb://localhost:27017/sso-server
+JWT_SECRET=your-jwt-secret-key
+SESSION_SECRET=your-session-secret
+
+# Google OAuth
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+
+# Facebook OAuth
+FACEBOOK_APP_ID=your_facebook_app_id
+FACEBOOK_APP_SECRET=your_facebook_app_secret
 ```
 
-## Test
+## OAuth Setup
 
-```
-npm run test
-```
+### Google OAuth Setup
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select existing one
+3. Enable Google+ API and OAuth2 API
+4. Go to Credentials → Create Credentials → OAuth Client ID
+5. Set authorized redirect URI: `http://localhost:5000/auth/google/callback`
+6. Copy Client ID and Client Secret to your `.env` file
+
+### Facebook OAuth Setup
+1. Go to [Facebook Developers](https://developers.facebook.com/)
+2. Create a new app or select existing one
+3. Add Facebook Login product
+4. Set OAuth redirect URI: `http://localhost:5000/auth/facebook/callback`
+5. Copy App ID and App Secret to your `.env` file
 
 ## Development
 
-```
+```bash
 npm run dev
 ```
+
+## Production Build
+
+```bash
+npm run build
+npm run start:dist
+```
+
+## Client Integration Guide
+
+### 1. Register Your Client Application
+
+First, register your client application with the SSO server:
+
+```bash
+curl -X POST 'http://localhost:5000/api/v1/clients' \
+-H 'Content-Type: application/json' \
+-d '{
+  "name": "Your Client App Name",
+  "allowedOrigins": [
+    "http://localhost:3000"
+  ],
+  "redirectUrls": [
+    "http://localhost:3000/callback"
+  ]
+}'
+```
+
+The response will include your `clientId` and `clientSecret`. Save these securely.
+
+### 2. Implement SSO Login Flow
+
+#### a. Redirect to SSO Server
+
+When a user clicks "Login" on your client application, redirect them to:
+
+```
+http://localhost:5000/auth/login?clientId=YOUR_CLIENT_ID&redirectUrl=YOUR_CALLBACK_URL
+```
+
+Users will see options for:
+- Local login (email/password)
+- Google login (if configured)
+- Facebook login (if configured)
+
+#### b. Handle the Callback
+
+After successful authentication, the user will be redirected to your callback URL with a JWT token:
+
+```
+http://localhost:3000/callback?token=JWT_TOKEN
+```
+
+#### c. Verify and Use the Token
+
+The JWT token contains the following payload:
+```javascript
+{
+  userId: "user's MongoDB ID",
+  clientId: "your client ID",
+  username: "user's username",
+  email: "user's email",
+  iat: timestamp,
+  exp: expiration timestamp
+}
+```
+
+### 3. Example Client Implementation (Node.js/Express)
+
+```javascript
+const express = require('express');
+const jwt = require('jsonwebtoken');
+
+const app = express();
+
+// Login route
+app.get('/login', (req, res) => {
+  const ssoUrl = 'http://localhost:5000/auth/login';
+  const clientId = 'YOUR_CLIENT_ID';
+  const redirectUrl = 'http://localhost:3000/callback';
+  
+  res.redirect(`${ssoUrl}?clientId=${clientId}&redirectUrl=${redirectUrl}`);
+});
+
+// Callback route
+app.get('/callback', (req, res) => {
+  const { token } = req.query;
+  
+  try {
+    // Verify the token
+    const decoded = jwt.verify(token, 'your-jwt-secret');
+    
+    // Store user session
+    req.session.user = decoded;
+    
+    res.redirect('/dashboard');
+  } catch (error) {
+    res.redirect('/login');
+  }
+});
+```
+
+### 4. Security Considerations
+
+1. Always use HTTPS in production
+2. Validate the JWT token signature
+3. Store client secrets securely
+4. Implement CSRF protection
+5. Use secure session settings
+6. Keep OAuth credentials confidential
+7. Regularly rotate secrets and tokens
+
+## API Endpoints
+
+### Authentication
+- `GET /auth/login` - Login page with social options
+- `POST /auth/login` - Handle local login
+- `GET /auth/register` - Registration page
+- `POST /auth/register` - Handle registration
+- `GET /auth/logout` - Handle logout
+- `GET /auth/google` - Initiate Google OAuth flow
+- `GET /auth/google/callback` - Handle Google OAuth callback
+- `GET /auth/facebook` - Initiate Facebook OAuth flow
+- `GET /auth/facebook/callback` - Handle Facebook OAuth callback
+
+### Client Management
+- `POST /api/v1/clients` - Create new client
+- `GET /api/v1/clients` - List all clients
+- `GET /api/v1/clients/:id` - Get client details
+- `PUT /api/v1/clients/:id` - Update client
+- `DELETE /api/v1/clients/:id` - Delete client
+
+### User Management
+- `GET /profile` - User profile
+- `GET /api/v1/users/:id` - Get user details
+- `PUT /api/v1/users/:id` - Update user
+- `DELETE /api/v1/users/:id` - Delete user
+
+## License
+
+MIT

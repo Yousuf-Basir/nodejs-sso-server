@@ -6,6 +6,7 @@ import { engine } from 'express-handlebars';
 import session from 'express-session';
 import flash from 'connect-flash';
 import path from 'path';
+import passport from './config/passport';
 import connectDB from './config/database';
 
 import * as middlewares from './middlewares';
@@ -43,6 +44,7 @@ app.use(helmet({
             scriptSrc: ["'self'", "'unsafe-inline'", "https:", "http:"],
             imgSrc: ["'self'", "https:", "http:", "data:", "blob:"],
             formAction: ["'self'", "*"],
+            connectSrc: ["'self'", "https://accounts.google.com", "https://www.facebook.com"]
         },
     },
 }));
@@ -61,6 +63,10 @@ app.use(session({
     }
 }));
 
+// Passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
 // Flash messages
 app.use(flash());
 
@@ -70,6 +76,7 @@ app.use((req, res, next) => {
         success: req.flash('success'),
         error: req.flash('error')
     };
+    res.locals.user = req.user;
     next();
 });
 

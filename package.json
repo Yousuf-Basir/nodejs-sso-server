@@ -35,6 +35,9 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.4",
     "morgan": "^1.10.0",
+    "passport": "^0.7.0",
+    "passport-facebook": "^3.0.0",
+    "passport-google-oauth20": "^2.0.0",
     "uuid": "^11.0.5"
   },
   "devDependencies": {
@@ -46,6 +49,9 @@
     "@types/jest": "^29.5.13",
     "@types/morgan": "^1.9.9",
     "@types/node": "^22.7.5",
+    "@types/passport": "^1.0.17",
+    "@types/passport-facebook": "^3.0.3",
+    "@types/passport-google-oauth20": "^2.0.16",
     "@types/supertest": "^6.0.2",
     "@typescript-eslint/eslint-plugin": "^7.16.1",
     "@typescript-eslint/parser": "^7.16.1",
