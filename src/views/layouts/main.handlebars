@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSO Server</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    {{> navbar}}
+    
+    <div class="container mt-4">
+        {{#if messages.success}}
+            <div class="alert alert-success">{{messages.success}}</div>
+        {{/if}}
+        {{#if messages.error}}
+            <div class="alert alert-danger">{{messages.error}}</div>
+        {{/if}}
+        
+        {{{body}}}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 
