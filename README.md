@@ -130,6 +130,55 @@ The JWT token contains the following payload:
 }
 ```
 
+#### d. Get User Profile
+
+After obtaining the token, you can get the user's profile details by making a request to the profile endpoint:
+
+```javascript
+const response = await fetch('http://localhost:5000/api/users/profile', {
+  method: 'GET',
+  headers: {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  }
+});
+const userProfile = await response.json();
+```
+
+The profile endpoint will return a JSON response with the following shape:
+
+```typescript
+{
+  _id: string;          // MongoDB document ID
+  username: string;     // User's username
+  email: string;        // User's email address
+  profileImageUrl?: string;  // Optional profile image URL
+  clientId?: string;    // Optional client ID associated with the user
+  googleId?: string;    // Optional Google ID if user signed up with Google
+  facebookId?: string;  // Optional Facebook ID if user signed up with Facebook
+  createdAt: Date;      // Account creation timestamp
+  updatedAt: Date;      // Last update timestamp
+}
+```
+
+Note:
+- The password field is excluded from the response for security
+- Optional fields (marked with ?) will only be present if they were set
+- All timestamps are in ISO 8601 format
+
+Possible error responses (JSON):
+```typescript
+{
+  error: string  // Error message describing what went wrong
+}
+```
+
+Common HTTP status codes:
+- 200 OK: Successful request
+- 401 Unauthorized: Invalid or expired token
+- 404 Not Found: User not found
+- 500 Internal Server Error: Server-side issues
+
 ### 3. Example Client Implementation (Node.js/Express)
 
 ```javascript
@@ -200,6 +249,7 @@ app.get('/callback', (req, res) => {
 - `GET /api/v1/users/:id` - Get user details
 - `PUT /api/v1/users/:id` - Update user
 - `DELETE /api/v1/users/:id` - Delete user
+- `GET /api/users/profile` - Get user profile details
 
 ## License
 

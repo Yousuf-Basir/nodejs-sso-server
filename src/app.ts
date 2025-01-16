@@ -36,18 +36,18 @@ app.set('views', path.join(__dirname, 'views'));
 
 // Middleware
 app.use(morgan('dev'));
-app.use(helmet({
-    contentSecurityPolicy: {
-        directives: {
-            defaultSrc: ["'self'"],
-            styleSrc: ["'self'", "'unsafe-inline'", "https:", "http:"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "https:", "http:"],
-            imgSrc: ["'self'", "https:", "http:", "data:", "blob:"],
-            formAction: ["'self'", "*"],
-            connectSrc: ["'self'", "https://accounts.google.com", "https://www.facebook.com"]
-        },
-    },
-}));
+// app.use(helmet({
+//     contentSecurityPolicy: {
+//         directives: {
+//             defaultSrc: ["'self'"],
+//             styleSrc: ["'self'", "'unsafe-inline'", "https:", "http:"],
+//             scriptSrc: ["'self'", "'unsafe-inline'", "https:", "http:"],
+//             imgSrc: ["'self'", "https:", "http:", "data:", "blob:"],
+//             formAction: ["'self'", "*"],
+//             connectSrc: ["'self'", "https://accounts.google.com", "https://www.facebook.com"]
+//         },
+//     },
+// }));
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
