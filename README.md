@@ -78,15 +78,17 @@ npm run start:dist
 First, register your client application with the SSO server:
 
 ```bash
-curl -X POST 'http://localhost:5000/api/v1/clients' \
+curl -X POST 'http://139.162.164.66:5000/api/v1/clients' \
 -H 'Content-Type: application/json' \
 -d '{
-  "name": "Your Client App Name",
+  "name": "skyharvest-feed",
   "allowedOrigins": [
-    "http://localhost:3000"
+    "http://139.162.164.66:4173",
+    "https://feed.skyharvest.com" 
   ],
   "redirectUrls": [
-    "http://localhost:3000/callback"
+    "http://139.162.164.66:4173/auth/callback",
+    "https://feed.skyharvest.com/auth/callback"
   ]
 }'
 ```
