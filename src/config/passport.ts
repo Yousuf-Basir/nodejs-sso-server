@@ -1,8 +1,11 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { Strategy as FacebookStrategy } from 'passport-facebook';
+import { Strategy as LocalStrategy } from 'passport-local';
+import bcrypt from 'bcrypt';
 import User from '../models/User';
 require('dotenv').config();
+
 // Ensure environment variables are loaded
 if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
     console.error('Missing Google OAuth credentials. Please check your .env file');
@@ -24,6 +27,30 @@ passport.deserializeUser(async (id: string, done) => {
         done(error, null);
     }
 });
+
+// Local Strategy
+passport.use(new LocalStrategy({
+    usernameField: 'email',
+    passwordField: 'password'
+}, async (email, password, done) => {
+    try {
+        const user = await User.findOne({ email });
+        
+        if (!user) {
+            return done(null, false, { message: 'Invalid email or password' });
+        }
+
+        const isMatch = bcrypt.compare(password, user.password as string);
+        
+        if (!isMatch) {
+            return done(null, false, { message: 'Invalid email or password' });
+        }
+
+        return done(null, user);
+    } catch (error) {
+        return done(error);
+    }
+}));
 
 // Google Strategy
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {

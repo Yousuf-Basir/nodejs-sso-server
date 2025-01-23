@@ -243,9 +243,15 @@ router.post('/register', isGuest, async (req: AuthRequest, res: Response) => {
 
 // Handle logout
 router.get('/logout', isAuthenticated, (req: AuthRequest, res: Response) => {
+    const { clientId, redirectUrl } = req.query;
     req.session.destroy((err) => {
         if (err) {
             console.error('Logout error:', err);
+        }
+        
+        if (clientId && redirectUrl) {
+            console.log('Redirecting to client URL:', redirectUrl);
+            return res.redirect(redirectUrl as string);
         }
         res.redirect('/');
     });

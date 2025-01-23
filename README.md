@@ -78,17 +78,17 @@ npm run start:dist
 First, register your client application with the SSO server:
 
 ```bash
-curl -X POST 'http://139.162.164.66:5000/api/v1/clients' \
+curl -X POST 'http://localhost:5000/api/v1/clients' \
 -H 'Content-Type: application/json' \
 -d '{
   "name": "skyharvest-feed",
   "allowedOrigins": [
-    "http://139.162.164.66:4173",
-    "https://feed.skyharvest.com" 
+    "http://localhost:8080",
+    "https://world.skyharvest.com" 
   ],
   "redirectUrls": [
-    "http://139.162.164.66:4173/auth/callback",
-    "https://feed.skyharvest.com/auth/callback"
+    "http://localhost:4173/auth/callback",
+    "https://world.skyharvest.com/auth/callback"
   ]
 }'
 ```
@@ -252,6 +252,183 @@ app.get('/callback', (req, res) => {
 - `PUT /api/v1/users/:id` - Update user
 - `DELETE /api/v1/users/:id` - Delete user
 - `GET /api/users/profile` - Get user profile details
+
+## API Documentation
+
+### Authentication Endpoints
+
+#### Social Login
+
+##### Google Authentication
+- **GET** `/api/auth/google`
+  - Query Parameters:
+    - `clientId`: Your client application ID
+    - `redirectUrl`: URL to redirect after successful authentication
+  - Response: Redirects to Google login
+
+##### Facebook Authentication
+- **GET** `/api/auth/facebook`
+  - Query Parameters:
+    - `clientId`: Your client application ID
+    - `redirectUrl`: URL to redirect after successful authentication
+  - Response: Redirects to Facebook login
+
+#### User Authentication
+
+##### Register User
+- **POST** `/api/users/register`
+  - Body:
+    ```json
+    {
+      "username": "string",
+      "email": "string",
+      "password": "string"
+    }
+    ```
+  - Response:
+    ```json
+    {
+      "status": "success",
+      "data": {
+        "user": {
+          "id": "string",
+          "username": "string",
+          "email": "string"
+        }
+      }
+    }
+    ```
+
+##### Login User
+- **POST** `/api/users/login`
+  - Body:
+    ```json
+    {
+      "email": "string",
+      "password": "string"
+    }
+    ```
+  - Response:
+    ```json
+    {
+      "status": "success",
+      "data": {
+        "token": "string"
+      }
+    }
+    ```
+
+### User Management Endpoints
+
+##### Get Users
+- **GET** `/api/users/client/:clientId`
+  - Headers:
+    - Authorization: Bearer {token}
+  - Response:
+    ```json
+    {
+      "status": "success",
+      "data": {
+        "users": [
+          {
+            "id": "string",
+            "username": "string",
+            "email": "string"
+          }
+        ]
+      }
+    }
+    ```
+
+##### Get User by ID
+- **GET** `/api/users/:id`
+  - Headers:
+    - Authorization: Bearer {token}
+  - Response:
+    ```json
+    {
+      "status": "success",
+      "data": {
+        "user": {
+          "id": "string",
+          "username": "string",
+          "email": "string"
+        }
+      }
+    }
+    ```
+
+##### Update User
+- **PUT** `/api/users/:id`
+  - Headers:
+    - Authorization: Bearer {token}
+  - Body:
+    ```json
+    {
+      "username": "string",
+      "email": "string"
+    }
+    ```
+  - Response:
+    ```json
+    {
+      "status": "success",
+      "data": {
+        "user": {
+          "id": "string",
+          "username": "string",
+          "email": "string"
+        }
+      }
+    }
+    ```
+
+##### Delete User
+- **DELETE** `/api/users/:id`
+  - Headers:
+    - Authorization: Bearer {token}
+  - Response:
+    ```json
+    {
+      "status": "success",
+      "message": "User deleted successfully"
+    }
+    ```
+
+## Web Routes
+
+The SSO server also provides web interfaces for user interaction:
+
+- `/auth/login` - Login page
+- `/auth/register` - Registration page
+- `/profile` - User profile page
+
+## Error Responses
+
+All API endpoints return errors in the following format:
+
+```json
+{
+  "status": "error",
+  "message": "Error description"
+}
+```
+
+Common HTTP status codes:
+- 200: Success
+- 400: Bad Request
+- 401: Unauthorized
+- 403: Forbidden
+- 404: Not Found
+- 500: Internal Server Error
+
+## Security Considerations
+
+1. Always use HTTPS in production
+2. Keep your client secrets and API keys secure
+3. Implement rate limiting for API endpoints
+4. Validate redirect URLs against whitelist
+5. Use secure session settings
 
 ## License
 

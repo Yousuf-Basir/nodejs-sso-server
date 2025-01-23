@@ -65,10 +65,25 @@ export const generateToken = (user: any, client: any) => {
 };
 
 export const isAuthenticated = (req: AuthRequest, res: Response, next: NextFunction) => {
-    if (req.session && req.session.user) {
-        req.user = req.session.user;
+    console.log('Session:', req.session);
+    console.log('User:', req.user);
+    console.log('Is Authenticated:', req.isAuthenticated());
+
+    if (req.isAuthenticated()) {
         return next();
     }
+
+    // Check if it's an API request (based on path or Accept header)
+    const isApiRequest = req.path.startsWith('/api') || req.accepts('json');
+
+    if (isApiRequest) {
+        return res.status(401).json({
+            status: 'error',
+            message: 'Authentication required'
+        });
+    }
+
+    // For web requests, redirect to login
     req.flash('error', 'Please log in to access this page');
     res.redirect('/auth/login');
 };
