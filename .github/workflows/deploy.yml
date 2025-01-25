@@ -18,7 +18,7 @@ jobs:
           key: ${{ secrets.PRIVATE_KEY }}
           port: 22
           script: |
-            cd /var/www/node-sso-server
+            cd /var/www/nodejs-sso-server
             git pull origin main
             export NVM_DIR=~/.nvm
             source ~/.nvm/nvm.sh
