@@ -31,7 +31,7 @@ router.get('/google/callback',
 
             // Set user session
             req.session.user = {
-                _id: req.user._id,
+                _id: req.user.id,
                 username: req.user.username,
                 email: req.user.email,
                 profileImageUrl: req.user.profileImageUrl,
@@ -92,7 +92,7 @@ router.get('/facebook/callback',
 
             // Set user session
             req.session.user = {
-                _id: req.user._id,
+                _id: req.user.id,
                 username: req.user.username,
                 email: req.user.email,
                 profileImageUrl: req.user.profileImageUrl,
