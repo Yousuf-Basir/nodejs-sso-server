@@ -1,8 +1,7 @@
 import express, { Response } from 'express';
 import passport from 'passport';
-import { isGuest, isAuthenticated, AuthRequest, generateToken } from '../../middlewares/auth';
+import { isGuest, AuthRequest, generateToken } from '../../middlewares/auth';
 import Client from '../../models/Client';
-import session from 'express-session';
 
 const router = express.Router();
 
@@ -49,15 +48,16 @@ router.get('/login', async (req: AuthRequest, res: Response) => {
 
 // Handle login form submission
 router.post('/login', (req: AuthRequest, res: Response, next) => {
+    const { clientId, redirectUrl } = req.query;
     passport.authenticate('local', async (err: any, user: any, info: any) => {
         if (err) {
             req.flash('error', 'An error occurred during authentication');
-            return res.redirect('/auth/login');
+            return res.redirect(`/auth/login?clientId=${clientId}&redirectUrl=${redirectUrl}`);
         }
 
         if (!user) {
             req.flash('error', info.message || 'Invalid credentials');
-            return res.redirect('/auth/login');
+            return res.redirect(`/auth/login?clientId=${clientId}&redirectUrl=${redirectUrl}`);
         }
 
         req.logIn(user, async (loginErr) => {

@@ -6,7 +6,7 @@ import {
   updateUser,
   deleteUser,
   authenticateUser
-} from '../controllers/userController';
+} from '../../controllers/userController';
 import { isAuthenticated, AuthRequest, generateToken } from '../../middlewares/auth';
 import Client from '../../models/Client';
 

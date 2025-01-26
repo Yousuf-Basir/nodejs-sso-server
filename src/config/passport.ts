@@ -61,7 +61,13 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
         passReqToCallback: true
     }, async (req: any, accessToken, refreshToken, profile, done) => {
         try {
-            const { clientId, redirectUrl } = req.query;
+            // when comming from google callback, if the query param was like this ?clientId=abc&redirectUrl=xyz then it will be deserialized to:
+            // query: { state: '{"clientId":"73494daa-3c33-450d-82aa-1808e81cc72d","redirectUrl":"https://world.skyharvest.eu/auth/callback"}', ... }
+            const { clientId, redirectUrl } = JSON.parse(req.query.state as string);
+            console.log("passport.ts:Google Stretegy: req", req);
+            console.log("passport.ts:Google Stretegy: clientId, redirectUrl", clientId, redirectUrl);
+            console.log("passport.ts:Google Stretegy: profile", profile);
+            
             
             // Check if user exists
             let user = await User.findOne({ email: profile.emails?.[0].value });
@@ -80,10 +86,12 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 
             // Store clientId and redirectUrl in session for callback
             if (clientId && redirectUrl) {
+                console.log("Setting clientId and redirectUrl in session");
                 req.session.clientId = clientId;
                 req.session.redirectUrl = redirectUrl;
             }
 
+            console.log("user", user);
             return done(null, user);
         } catch (error) {
             return done(error as Error, undefined);

@@ -5,7 +5,7 @@ import {
   getClientById,
   updateClient,
   deleteClient
-} from '../controllers/clientController';
+} from '../../controllers/clientController';
 import { isAuthenticated } from '../../middlewares/auth';
 
 const router = express.Router();
