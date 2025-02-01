@@ -2,6 +2,8 @@ import express, { Response } from 'express';
 import passport from 'passport';
 import { isGuest, AuthRequest, generateToken } from '../../middlewares/auth';
 import Client from '../../models/Client';
+import User from '../../models/User';
+import bcrypt from 'bcryptjs';
 
 const router = express.Router();
 
@@ -193,19 +195,56 @@ router.get('/logout', async (req: AuthRequest, res: Response) => {
 });
 
 // Register page
-router.get('/register', isGuest, (req: AuthRequest, res: Response) => {
+router.get('/register', (req: AuthRequest, res: Response) => {
+    if (req.isAuthenticated()) {
+        return res.redirect('/profile');
+    }
     const { clientId, redirectUrl } = req.query;
-    const googleEnabled = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
-    const facebookEnabled = Boolean(process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET);
-    const socialLoginEnabled = googleEnabled || facebookEnabled;
-    
     res.render('auth/register', {
         clientId,
-        redirectUrl,
-        googleEnabled,
-        facebookEnabled,
-        socialLoginEnabled
+        redirectUrl
     });
+});
+
+// Handle registration
+router.post('/register', async (req: AuthRequest, res: Response) => {
+    const { clientId, redirectUrl } = req.query;
+    try {
+        const { username, email, password } = req.body;
+
+        // Validate input
+        if (!username || !email || !password) {
+            req.flash('error', 'All fields are required');
+            return res.redirect(`/auth/register?clientId=${clientId || ''}&redirectUrl=${redirectUrl || ''}`);
+        }
+
+        // Check if user already exists
+        const existingUser = await User.findOne({
+            $or: [{ email }, { username }]
+        });
+
+        if (existingUser) {
+            req.flash('error', 'User with this email or username already exists');
+            return res.redirect(`/auth/register?clientId=${clientId || ''}&redirectUrl=${redirectUrl || ''}`);
+        }
+
+        // Create new user
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const user = new User({
+            username,
+            email,
+            password: hashedPassword
+        });
+
+        await user.save();
+
+        req.flash('success', 'Registration successful! Please log in.');
+        res.redirect(`/auth/login?clientId=${clientId || ''}&redirectUrl=${redirectUrl || ''}`);
+    } catch (error) {
+        console.error('Registration error:', error);
+        req.flash('error', 'An error occurred during registration');
+        res.redirect(`/auth/register?clientId=${clientId || ''}&redirectUrl=${redirectUrl || ''}`);
+    }
 });
 
 export default router;

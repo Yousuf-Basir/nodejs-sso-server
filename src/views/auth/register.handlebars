@@ -27,9 +27,7 @@
                 </div>
                 {{/if}}
 
-                <form action="/auth/register" method="POST">
-                    <input type="hidden" name="clientId" value="{{clientId}}">
-                    <input type="hidden" name="redirectUrl" value="{{redirectUrl}}">
+                <form action="/auth/register?clientId={{clientId}}&redirectUrl={{redirectUrl}}" method="POST">
                     <div class="mb-3">
                         <label for="username" class="form-label">Username</label>
                         <input type="text" class="form-control" id="username" name="username" required>
